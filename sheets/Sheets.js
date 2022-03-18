@@ -9,8 +9,6 @@
 
 */
 
-
-
 /*
    _____ _               _         _____        __      
   / ____| |             | |       |_   _|      / _|     
@@ -21,8 +19,6 @@
                                                         
                                                         
 */
-
-
 
 /*
     use getSheetsInfo(ids)
@@ -37,46 +33,48 @@
   If strSheet doesn't exist → creates new sheet
                                     
 */
-function writeDataIntoSheet(file, sheet, data, rowStart, colStart) {
-  file = file || SpreadsheetApp.getActiveSpreadsheet();
-  
-  // get sheet as object
-  switch(typeof sheet) {
-    case 'object':
-        break;
-    case 'string':
-        sheet = createSheetIfNotExists(file, sheet);
-        break;
-    default:
-        return 'sheet is invalid';
-  }
-  
-  // get dimansions and get range
-  rowStart = rowStart || 1;
-  colStart = colStart || 1;   
-  var numRows = data.length;
-  var numCols = data[0].length; 
-  var range = sheet.getRange(rowStart, colStart, numRows, numCols);
-  
-  // clear old data if rowStart or colStart are not defined
-  if(!rowStart && !colStart) { sheet.clearContents(); }
+export function writeDataIntoSheet(file, sheet, data, rowStart, colStart) {
+    file = file || SpreadsheetApp.getActiveSpreadsheet();
 
-  
-  // set values
-  range.setValues(data);
-  
-  // report success
-  return 'Wtite data to sheet -- ok!';
+    // get sheet as object
+    switch (typeof sheet) {
+        case "object":
+            break;
+        case "string":
+            sheet = createSheetIfNotExists(file, sheet);
+            break;
+        default:
+            return "sheet is invalid";
+    }
 
+    // get dimansions and get range
+    rowStart = rowStart || 1;
+    colStart = colStart || 1;
+    var numRows = data.length;
+    var numCols = data[0].length;
+    var range = sheet.getRange(rowStart, colStart, numRows, numCols);
+
+    // clear old data if rowStart or colStart are not defined
+    if (!rowStart && !colStart) {
+        sheet.clearContents();
+    }
+
+    // set values
+    range.setValues(data);
+
+    // report success
+    return "Wtite data to sheet -- ok!";
 }
 
 function TESTwriteDataIntoSheet() {
-  var data = [['Name', 'Age'], ['Max', 28], ['Lu', 26]];
-  var strSheet = "Sheet1";
-  Logger.log(writeDataIntoSheet(false, strSheet, data));
-
+    var data = [
+        ["Name", "Age"],
+        ["Max", 28],
+        ["Lu", 26],
+    ];
+    var strSheet = "Sheet1";
+    Logger.log(writeDataIntoSheet(false, strSheet, data));
 }
-
 
 /*
 
@@ -99,43 +97,41 @@ function TESTwriteDataIntoSheet() {
       -----------------------------------------------------------------------------
       * Id = fileName/sheetName/fileId/sheetId
 */
-function getSheetsInfo(ids) {
+export function getSheetsInfo(ids) {
+    var result = [];
+    var headers = [
+        "Id",
+        "fileId",
+        "fileName",
+        "sheetId",
+        "sheetName",
+        "lastRow",
+        "lastCol",
+    ];
+    // Id = fileName/sheetName/fileId/sheetId
 
-  var result = [];
-  var headers = ['Id', 'fileId', 'fileName', 'sheetId', 'sheetName', 'lastRow', 'lastCol'];
-  // Id = fileName/sheetName/fileId/sheetId
+    result.push(headers);
 
-  result.push(headers);
-  
-  
-  if (Array.isArray(ids)) {
+    if (Array.isArray(ids)) {
+        ids = get1DArray(ids);
 
-  
-    ids = get1DArray(ids); 
-        
-    var rows = [];    
-    for (var i = 0; i < ids.length; i++) {
-      rows = [];
-      rows = getSheetsInfo_(ids[i]);
-      result = result.concat(rows);
+        var rows = [];
+        for (var i = 0; i < ids.length; i++) {
+            rows = [];
+            rows = getSheetsInfo_(ids[i]);
+            result = result.concat(rows);
+        }
+    } else {
+        result = getSheetsInfo_(ids);
     }
-    
-    
-  }
-  else {
-    result = getSheetsInfo_(ids);  
-  }
-  
-  return result;
 
+    return result;
 }
 function TESTgetSheetsInfo() {
-  var ids = ['16rzrnZrAQK9cz...', '1ld-Ww6WiOO8r39vcOPcF...'];
-  var data = getSheetsInfo(ids);
-  Logger.log(data);
-
+    var ids = ["16rzrnZrAQK9cz...", "1ld-Ww6WiOO8r39vcOPcF..."];
+    var data = getSheetsInfo(ids);
+    Logger.log(data);
 }
-
 
 /*
   input 
@@ -150,67 +146,55 @@ function TESTgetSheetsInfo() {
       ----------------------------------------------------------------------
 
 */
-function getSheetsInfo_(fileId) {
-  var result = [];
-  
-  
-  var row = [];
+export function getSheetsInfo_(fileId) {
+    var result = [];
 
-  var file = SpreadsheetApp.openById(fileId);
-  var fileName = file.getName();
-  var sheets = file.getSheets();
-  var sheetName, sheetId
-  for (var i = 0; i < sheets.length; i++) {
-    
-    var sheet = sheets[i];
-    
-    row = [];
-        
-    sheetName = sheet.getName();
-    sheetId = sheet.getSheetId();
-    // Id = fileName/sheetName/fileId/sheetId
-    row.push(fileName + '/' + sheetName + '/' + fileId + '/' + sheetId);
-    row.push(fileId);
-    row.push(fileName);
-    row.push(sheetId);
-    row.push(sheetName);    
-    row.push(sheet.getLastRow());
-    row.push(sheet.getLastColumn());
-    
-    result.push(row);
-    
-  }
-  
-  return result;
-  
+    var row = [];
+
+    var file = SpreadsheetApp.openById(fileId);
+    var fileName = file.getName();
+    var sheets = file.getSheets();
+    var sheetName, sheetId;
+    for (var i = 0; i < sheets.length; i++) {
+        var sheet = sheets[i];
+
+        row = [];
+
+        sheetName = sheet.getName();
+        sheetId = sheet.getSheetId();
+        // Id = fileName/sheetName/fileId/sheetId
+        row.push(fileName + "/" + sheetName + "/" + fileId + "/" + sheetId);
+        row.push(fileId);
+        row.push(fileName);
+        row.push(sheetId);
+        row.push(sheetName);
+        row.push(sheet.getLastRow());
+        row.push(sheet.getLastColumn());
+
+        result.push(row);
+    }
+
+    return result;
 }
-
 
 /*
   returns sheet {} by given fileId, sheetId
 */
-function test_getSheetById()
-{
- var fileId = '1wTEo0fat1y5dh_JwGHqaVCPNSjaodD6OrVdbglM8WD8'; 
- var sheetId = 0;
-  Logger.log(getSheetById(fileId, sheetId).getName());
-  
+function test_getSheetById() {
+    var fileId = "1wTEo0fat1y5dh_JwGHqaVCPNSjaodD6OrVdbglM8WD8";
+    var sheetId = 0;
+    Logger.log(getSheetById(fileId, sheetId).getName());
 }
-function getSheetById(fileId, sheetId)
-{
-  var file = SpreadsheetApp.openById(fileId);
-  var sheets = file.getSheets();
-  
-  for(var i = 0, l = sheets.length; i < l; i++)
-  {
-   if (sheets[i].getSheetId() == sheetId) return sheets[i]; 
-  }
-  
-  return false;
-  
+export function getSheetById(fileId, sheetId) {
+    var file = SpreadsheetApp.openById(fileId);
+    var sheets = file.getSheets();
+
+    for (var i = 0, l = sheets.length; i < l; i++) {
+        if (sheets[i].getSheetId() == sheetId) return sheets[i];
+    }
+
+    return false;
 }
-
-
 
 /*
 
@@ -224,7 +208,6 @@ function getSheetById(fileId, sheetId)
                       |_|                                                          
 */
 
-
 /* copySheet
   * make copy of sheet and mave it after current sheet
   
@@ -232,16 +215,14 @@ function getSheetById(fileId, sheetId)
   * strToCopy    Name of sheet to copy
   * strName      Name of new sheet
 */
-function copySheet(SS, strToCopy, strName) {
-
-  var SS = SS || SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = SS.getSheetByName(strToCopy);
-  var newSheet = sheet.copyTo(SS);
-  newSheet.setName(strName);
-  var index = sheet.getIndex() + 1;  
-  SS.setActiveSheet(newSheet);
-  SS.moveActiveSheet(index);
-
+export function copySheet(SS, strToCopy, strName) {
+    var SS = SS || SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = SS.getSheetByName(strToCopy);
+    var newSheet = sheet.copyTo(SS);
+    newSheet.setName(strName);
+    var index = sheet.getIndex() + 1;
+    SS.setActiveSheet(newSheet);
+    SS.moveActiveSheet(index);
 }
 
 /*
@@ -251,52 +232,48 @@ function copySheet(SS, strToCopy, strName) {
   * ss           SpreadSheet                 default: current sheet
   * name         Name of sheet
 */
-function createSheetIfNotExists(ss, name) { 
-  var ss = ss || SpreadsheetApp.getActiveSpreadsheet();
-  
-  try {ss.setActiveSheet(ss.getSheetByName(name));}
-    catch (e) {ss.insertSheet(name);} 
-  
-  var sheet = ss.getSheetByName(name);
-  return sheet;
-}
+export function createSheetIfNotExists(ss, name) {
+    var ss = ss || SpreadsheetApp.getActiveSpreadsheet();
 
+    try {
+        ss.setActiveSheet(ss.getSheetByName(name));
+    } catch (e) {
+        ss.insertSheet(name);
+    }
+
+    var sheet = ss.getSheetByName(name);
+    return sheet;
+}
 
 // ************************************************************************************************************
 var C_COLS_LEAVE = 1;
 var C_ROWS_LEAVE = 25;
 
-
-function deleteEmptyCells() {
-  var file = SpreadsheetApp.getActive();
-  var sheets = file.getSheets();  
-  for (var i = 0, l = sheets.length; i < l; i++) { deleteEmptyCellsSheet_(sheets[i]); }
-  return 0;  
-  
+export function deleteEmptyCells() {
+    var file = SpreadsheetApp.getActive();
+    var sheets = file.getSheets();
+    for (var i = 0, l = sheets.length; i < l; i++) {
+        deleteEmptyCellsSheet_(sheets[i]);
+    }
+    return 0;
 }
 
-function deleteEmptyCellsSheet_(sheet)
-{
-  // columns
-  var cLast = sheet.getLastColumn();
-  var cEnd = sheet.getMaxColumns();
-  if ( (cEnd - cLast) > C_COLS_LEAVE ) 
-  {
-    var numC = cEnd - cLast - C_COLS_LEAVE;
-    sheet.deleteColumns(cLast + 1, numC);  
-  }
-  
-  // rows
-  var rLast = sheet.getLastRow();
-  var rEnd = sheet.getMaxRows();
-  if ( (rEnd - rLast) > C_ROWS_LEAVE ) 
-  {
-    var numC = rEnd - rLast - C_ROWS_LEAVE;
-    sheet.deleteRows(rLast + 1, numC);  
-  }  
+function deleteEmptyCellsSheet_(sheet) {
+    // columns
+    var cLast = sheet.getLastColumn();
+    var cEnd = sheet.getMaxColumns();
+    if (cEnd - cLast > C_COLS_LEAVE) {
+        var numC = cEnd - cLast - C_COLS_LEAVE;
+        sheet.deleteColumns(cLast + 1, numC);
+    }
+
+    // rows
+    var rLast = sheet.getLastRow();
+    var rEnd = sheet.getMaxRows();
+    if (rEnd - rLast > C_ROWS_LEAVE) {
+        var numC = rEnd - rLast - C_ROWS_LEAVE;
+        sheet.deleteRows(rLast + 1, numC);
+    }
 }
 
 // ************************************************************************************************************
-
-
-
